@@ -4,6 +4,7 @@ import com.somdelie_pos.somdelie_pos.Service.UserService;
 import com.somdelie_pos.somdelie_pos.configuration.JwtProvider;
 import com.somdelie_pos.somdelie_pos.exceptions.UserException;
 import com.somdelie_pos.somdelie_pos.modal.User;
+import com.somdelie_pos.somdelie_pos.payload.dto.OrderDTO;
 import com.somdelie_pos.somdelie_pos.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -59,7 +60,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<User> getAllUsers(List<User> users) {
         return userRepository.findAll();
+    }
+
+    @Override
+    public List<OrderDTO> getAllUsers() {
+        return List.of();
     }
 }

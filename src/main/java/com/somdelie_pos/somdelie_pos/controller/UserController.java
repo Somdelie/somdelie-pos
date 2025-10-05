@@ -4,11 +4,13 @@ import com.somdelie_pos.somdelie_pos.Service.UserService;
 import com.somdelie_pos.somdelie_pos.exceptions.UserException;
 import com.somdelie_pos.somdelie_pos.mapper.UserMapper;
 import com.somdelie_pos.somdelie_pos.modal.User;
+import com.somdelie_pos.somdelie_pos.payload.dto.OrderDTO;
 import com.somdelie_pos.somdelie_pos.payload.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -33,5 +35,11 @@ public class UserController {
             throw new Exception("User not found");
         }
         return ResponseEntity.ok(UserMapper.toDto(user));
+    }
+
+    // get all users
+    @GetMapping
+    public ResponseEntity<List<OrderDTO>> getAllUsers() throws Exception {
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 }
