@@ -1,7 +1,8 @@
 package com.somdelie_pos.somdelie_pos.modal;
 
 import jakarta.persistence.*;
-import lombok.*;
+
+import org.hibernate.annotations.GenericGenerator;import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -15,7 +16,7 @@ import java.util.UUID;
 public class Inventory {
     @Id
     @GeneratedValue
-    @Column(columnDefinition = "BINARY(16)")
+    @Column(updatable = false, nullable = false, columnDefinition = "uuid")
     private UUID id;
 
     @ManyToOne
@@ -35,3 +36,4 @@ public class Inventory {
         lastUpdate = LocalDateTime.now();
     }
 }
+

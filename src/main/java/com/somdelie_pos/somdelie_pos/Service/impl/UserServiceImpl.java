@@ -21,19 +21,24 @@ public class UserServiceImpl implements UserService {
     private final JwtProvider jwtProvider;
 
     @Override
-    public User getUserFromJwtToken(String token) throws UserException {
+    public User getUserFromJwtToken(String rawHeader) throws UserException {
+        if (rawHeader == null || rawHeader.isBlank()) {
+            throw new UserException("Missing Authorization header");
+        }
+        String token = rawHeader.startsWith("Bearer ")
+                ? rawHeader.substring(7)
+                : rawHeader;
 
         String email = jwtProvider.getEmailFromToken(token);
         User user = userRepository.findByEmail(email);
         if (user == null) {
-            throw new UserException("Invalid token!");
+            throw new UserException("Invalid token");
         }
         return user;
     }
 
     @Override
     public User getCurrentUser() throws UserException {
-
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email);
         if (user == null) {
@@ -52,11 +57,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserById(UUID id) throws UserException, Exception {
+    public User getUserById(UUID id) throws Exception {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new Exception("User with id " + id + " not found"));
+    }
 
-        return userRepository.findById(id).orElseThrow(
-                ()-> new Exception("User with given id is was not found")
-        );
+    @Override
+    public User save(User user) {
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User findById(UUID id) throws UserException {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserException("User not found"));
     }
 
     @Override
@@ -66,6 +80,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<OrderDTO> getAllUsers() {
-        return List.of();
+        return List.of(); // Placeholder
     }
 }

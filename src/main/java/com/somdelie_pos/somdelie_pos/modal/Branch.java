@@ -1,7 +1,8 @@
 package com.somdelie_pos.somdelie_pos.modal;
 
 import jakarta.persistence.*;
-import lombok.*;
+
+import org.hibernate.annotations.GenericGenerator;import lombok.*;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -17,7 +18,7 @@ import java.util.UUID;
 public class Branch {
     @Id
     @GeneratedValue
-    @Column(columnDefinition = "BINARY(16)")
+    @Column(updatable = false, nullable = false, columnDefinition = "uuid")
     private UUID id;
 
     @Column(nullable = false)
@@ -56,3 +57,4 @@ public class Branch {
     }
 
 }
+

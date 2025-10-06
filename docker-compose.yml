@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: somdelie-pos-app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATA_URL: jdbc:postgresql://ep-dark-glitter-ad993933-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
+      DATASOURCE_USER: neondb_owner
+      DATASOURCE_PASSWORD: npg_9enfqIWRBtQ5
+      JAVA_OPTS: -Xmx512m -Xms256m
+    networks:
+      - somdelie-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  somdelie-network:
+    driver: bridge

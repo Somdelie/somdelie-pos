@@ -1,10 +1,14 @@
 package com.somdelie_pos.somdelie_pos.modal;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import lombok.*;
+
+import org.hibernate.annotations.GenericGenerator;import jakarta.persistence.Entity;
+
+import org.hibernate.annotations.GenericGenerator;import jakarta.persistence.GeneratedValue;
+
+import org.hibernate.annotations.GenericGenerator;import jakarta.persistence.Id;
+
+import org.hibernate.annotations.GenericGenerator;import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -19,7 +23,7 @@ public class Customer {
 
     @Id
     @GeneratedValue
-    @Column(columnDefinition = "BINARY(16)")
+    @Column(updatable = false, nullable = false, columnDefinition = "uuid")
     private UUID id;
 
     @Column(nullable = false)
@@ -34,3 +38,4 @@ public class Customer {
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
 }
+

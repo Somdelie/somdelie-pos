@@ -3,7 +3,8 @@ package com.somdelie_pos.somdelie_pos.modal;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.somdelie_pos.somdelie_pos.domain.PaymentType;
 import jakarta.persistence.*;
-import lombok.*;
+
+import org.hibernate.annotations.GenericGenerator;import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -18,7 +19,7 @@ public class Refund {
 
     @Id
     @GeneratedValue
-    @Column(columnDefinition = "BINARY(16)")
+    @Column(updatable = false, nullable = false, columnDefinition = "uuid")
     private UUID id;
 
     @ManyToOne
@@ -48,3 +49,4 @@ public class Refund {
     }
 
 }
+

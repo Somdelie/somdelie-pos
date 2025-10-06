@@ -1,5 +1,6 @@
 package com.somdelie_pos.somdelie_pos.configuration;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,9 +16,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
+
+    @Autowired
+    private JwtValidator jwtValidator;
 
     /**
      * Think of this like `app.use()` in Express.
@@ -43,7 +48,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/**").authenticated()
                                 .anyRequest().permitAll()
                 )
-                .addFilterBefore(new JwtValidator(), BasicAuthenticationFilter.class)
+                .addFilterBefore(jwtValidator, BasicAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .build();
@@ -66,11 +71,26 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
 
-        // Allowed React frontend URLs (like `origin` in Express CORS)
-        cfg.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173",
-                "http://localhost:3000"
-        ));
+        // Get allowed origins from environment variable, fallback to localhost
+        String allowedOriginsEnv = System.getenv("ALLOWED_ORIGINS");
+        List<String> allowedOrigins;
+
+        if (allowedOriginsEnv != null && !allowedOriginsEnv.isEmpty()) {
+            // Split comma-separated origins from environment variable
+            allowedOrigins = Arrays.asList(allowedOriginsEnv.split(","));
+            System.out.println("✅ Using ALLOWED_ORIGINS from environment: " + allowedOrigins);
+        } else {
+            // Default for local development
+            allowedOrigins = Arrays.asList(
+                    "http://localhost:5173",
+                    "http://localhost:3000",
+                    "https://somdelie-posv1.vercel.app",
+                    "https://somdelie-posv1-hgpco1oyv-somdelies-projects.vercel.app"
+            );
+            System.out.println("⚠️ ALLOWED_ORIGINS not set, using defaults: " + allowedOrigins);
+        }
+
+        cfg.setAllowedOrigins(allowedOrigins);
 
         // Allowed HTTP methods
         cfg.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));

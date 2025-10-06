@@ -1,7 +1,8 @@
 package com.somdelie_pos.somdelie_pos.modal;
 
 import jakarta.persistence.*;
-import lombok.*;
+
+import org.hibernate.annotations.GenericGenerator;import lombok.*;
 
 import java.util.UUID;
 
@@ -15,7 +16,7 @@ public class OrderItem {
 
     @Id
     @GeneratedValue
-    @Column(columnDefinition = "BINARY(16)")
+    @Column(updatable = false, nullable = false, columnDefinition = "uuid")
     private UUID id;
 
     private Integer quantity;
@@ -31,3 +32,4 @@ public class OrderItem {
     private Order order;
 
 }
+

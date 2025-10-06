@@ -8,12 +8,15 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-
     User getUserFromJwtToken(String token) throws UserException;
     User getCurrentUser() throws UserException;
     User getUserByEmail(String email) throws UserException;
-    User getUserById(UUID id) throws UserException, Exception;
-    List<User> getAllUsers(List<User> users);
+    User getUserById(UUID id) throws Exception;
 
+    // Added
+    User save(User user);
+    User findById(UUID id) throws UserException;
+
+    List<User> getAllUsers(List<User> users);
     List<OrderDTO> getAllUsers();
 }
