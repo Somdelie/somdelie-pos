@@ -30,9 +30,9 @@ public class SecurityConfig {
      * - Sets up global security middlewares.
      * - Stateless sessions = no server-side sessions (like using JWTs in Express).
      * - Route protection:
-     *      /api/super-admin/** → only ADMIN role
-     *      /api/** → must be logged in
-     *      everything else → public
+     * /api/super-admin/** → only ADMIN role
+     * /api/** → must be logged in
+     * everything else → public
      * - Adds JwtValidator middleware (like a custom Express JWT middleware).
      * - Disables CSRF (not needed for REST APIs).
      * - Applies CORS policy (like `app.use(cors({...}))` in Express).
@@ -41,13 +41,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         return http
-                .sessionManagement(management ->
-                        management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize ->
-                        authorize.requestMatchers("/api/super-admin/**").hasRole("ADMIN")
-                                .requestMatchers("/api/**").authenticated()
-                                .anyRequest().permitAll()
-                )
+                .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authorize -> authorize.requestMatchers("/api/super-admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().permitAll())
                 .addFilterBefore(jwtValidator, BasicAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -84,25 +81,25 @@ public class SecurityConfig {
             allowedOrigins = Arrays.asList(
                     "http://localhost:5173",
                     "http://localhost:3000",
-                    "http://localhost:5000"
-            );
+                    "http://localhost:5000",
+                    "https://somdelie-posv1.vercel.app");
             System.out.println("⚠️ ALLOWED_ORIGINS not set, using defaults: " + allowedOrigins);
         }
 
         // Set allowed origins
         cfg.setAllowedOrigins(allowedOrigins);
-        
+
         // Allow all Vercel domains using pattern matching
         cfg.setAllowedOriginPatterns(Arrays.asList(
                 "https://*.vercel.app",
                 "https://vercel.app",
-                "http://localhost:*"
-        ));
+                "http://localhost:*"));
 
         // Allowed HTTP methods
         cfg.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
-        // Allow credentials (cookies, auth headers) → like `{ credentials: true }` in Express CORS
+        // Allow credentials (cookies, auth headers) → like `{ credentials: true }` in
+        // Express CORS
         cfg.setAllowCredentials(true);
 
         // Allow all request headers
