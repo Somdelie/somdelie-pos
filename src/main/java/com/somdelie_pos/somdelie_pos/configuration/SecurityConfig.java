@@ -80,17 +80,24 @@ public class SecurityConfig {
             allowedOrigins = Arrays.asList(allowedOriginsEnv.split(","));
             System.out.println("✅ Using ALLOWED_ORIGINS from environment: " + allowedOrigins);
         } else {
-            // Default for local development
+            // Default for local development and common deployment platforms
             allowedOrigins = Arrays.asList(
                     "http://localhost:5173",
                     "http://localhost:3000",
-                    "https://somdelie-posv1.vercel.app",
-                    "https://somdelie-posv1-hgpco1oyv-somdelies-projects.vercel.app"
+                    "http://localhost:5000"
             );
             System.out.println("⚠️ ALLOWED_ORIGINS not set, using defaults: " + allowedOrigins);
         }
 
+        // Set allowed origins
         cfg.setAllowedOrigins(allowedOrigins);
+        
+        // Allow all Vercel domains using pattern matching
+        cfg.setAllowedOriginPatterns(Arrays.asList(
+                "https://*.vercel.app",
+                "https://vercel.app",
+                "http://localhost:*"
+        ));
 
         // Allowed HTTP methods
         cfg.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
