@@ -4,7 +4,7 @@ import com.somdelie_pos.somdelie_pos.domain.OrderStatus;
 import com.somdelie_pos.somdelie_pos.domain.PaymentType;
 import jakarta.persistence.*;
 
-import org.hibernate.annotations.GenericGenerator;import lombok.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,20 +38,19 @@ public class Order {
     @ManyToOne
     private Customer customer;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items;
 
     private PaymentType paymentType;
 
-    @Enumerated(EnumType.STRING)  // ✅ Add this
-    private OrderStatus status;    // ✅ Add this
+    @Enumerated(EnumType.STRING) // ✅ Add this
+    private OrderStatus status; // ✅ Add this
 
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         createdAt = LocalDateTime.now();
         if (status == null) {
             status = OrderStatus.COMPLETED; // ✅ Default to COMPLETED for POS
         }
     }
 }
-

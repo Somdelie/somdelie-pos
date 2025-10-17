@@ -2,7 +2,9 @@ package com.somdelie_pos.somdelie_pos.modal;
 
 import jakarta.persistence.*;
 
-import org.hibernate.annotations.GenericGenerator;import lombok.*;
+import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.UUID;
 
@@ -28,8 +30,9 @@ public class OrderItem {
     @ManyToOne
     private Product product;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false, foreignKey = @ForeignKey(name = "fk_order_item_order"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Order order;
 
 }
-

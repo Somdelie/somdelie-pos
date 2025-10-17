@@ -3,6 +3,7 @@ package com.somdelie_pos.somdelie_pos.Service.impl;
 import com.somdelie_pos.somdelie_pos.Service.ShiftReportService;
 import com.somdelie_pos.somdelie_pos.Service.UserService;
 import com.somdelie_pos.somdelie_pos.domain.PaymentType;
+import com.somdelie_pos.somdelie_pos.exception.ResourceNotFoundException;
 import com.somdelie_pos.somdelie_pos.mapper.ShiftReportMapper;
 import com.somdelie_pos.somdelie_pos.modal.*;
 import com.somdelie_pos.somdelie_pos.payload.dto.ShiftReportDTO;
@@ -20,7 +21,6 @@ public class ShiftReportServiceImpl implements ShiftReportService {
 
     private final ShiftReportRepository shiftReportRepository;
     private final UserService userService;
-    private final BranchRepository branchRepository;
     private final RefundRepository refundRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
@@ -38,10 +38,9 @@ public class ShiftReportServiceImpl implements ShiftReportService {
             LocalDateTime endOfDay = shiftStart.withHour(23).withMinute(59).withSecond(59).withNano(999999999);
 
             Optional<ShiftReport> existing = shiftReportRepository.findByCashierAndShiftStartBetween(
-                    currentUser, startOfDay, endOfDay
-            );
+                    currentUser, startOfDay, endOfDay);
 
-            if(existing.isPresent()) {
+            if (existing.isPresent()) {
                 throw new Exception("ShiftReport already started for today!");
             }
 
@@ -69,31 +68,50 @@ public class ShiftReportServiceImpl implements ShiftReportService {
     public ShiftReportDTO endShift(UUID shiftReportId, LocalDateTime shiftEnd) throws Exception {
         User currentUser = userService.getCurrentUser();
 
-        ShiftReport shiftReport = shiftReportRepository
-                .findTopByCashierAndShiftEndIsNullOrderByShiftStartDesc(currentUser)
-                .orElseThrow(() -> new Exception("ShiftReport not found!"));
+        // Resolve the active shift to end: prefer provided ID, else fallback to latest
+        // active for current user
+        ShiftReport shiftReport;
+        if (shiftReportId != null) {
+            shiftReport = shiftReportRepository.findById(shiftReportId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Shift report not found"));
+            // Ensure the shift belongs to the current user
+            if (shiftReport.getCashier() == null || !shiftReport.getCashier().getId().equals(currentUser.getId())) {
+                throw new IllegalStateException("You can only end your own active shift");
+            }
+            if (shiftReport.getShiftEnd() != null) {
+                throw new IllegalStateException("Shift is already ended");
+            }
+        } else {
+            shiftReport = shiftReportRepository
+                    .findTopByCashierAndShiftEndIsNullOrderByShiftStartDesc(currentUser)
+                    .orElseThrow(() -> new ResourceNotFoundException("No active shift found for this cashier"));
+        }
 
         // Use provided shiftEnd or current time if null
-        LocalDateTime endTime = shiftEnd != null ? shiftEnd : LocalDateTime.now();
+        LocalDateTime endTime = (shiftEnd != null) ? shiftEnd : LocalDateTime.now();
+        // Guard against an end time before the start
+        if (endTime.isBefore(shiftReport.getShiftStart())) {
+            throw new IllegalArgumentException("Shift end time cannot be before shift start time");
+        }
+
         shiftReport.setShiftEnd(endTime);
 
+        // Calculate within [shiftStart, endTime]
         List<Refund> refunds = refundRepository.findByCashierAndCreatedAtBetween(
-                currentUser, shiftReport.getShiftStart(), shiftReport.getShiftEnd()
-        );
+                currentUser, shiftReport.getShiftStart(), endTime);
 
         double totalRefunds = refunds.stream()
                 .mapToDouble(refund -> refund.getAmount() != null ? refund.getAmount() : 0.0)
                 .sum();
 
         List<Order> orders = orderRepository.findByCashierAndCreatedAtBetween(
-                currentUser, shiftReport.getShiftStart(), shiftReport.getShiftEnd()
-        );
+                currentUser, shiftReport.getShiftStart(), endTime);
 
         double totalSales = orders.stream()
-                .mapToDouble(Order::getTotalAmount).sum();
+                .mapToDouble(o -> o.getTotalAmount() != null ? o.getTotalAmount() : 0.0)
+                .sum();
 
         int totalOrders = orders.size();
-
         double netSale = totalSales - totalRefunds;
 
         shiftReport.setNetSale(netSale);
@@ -112,9 +130,8 @@ public class ShiftReportServiceImpl implements ShiftReportService {
     @Override
     public ShiftReportDTO getShiftReportById(UUID shiftReportId) throws Exception {
         return shiftReportRepository.findById(shiftReportId)
-                .map(ShiftReportMapper::toDTO).orElseThrow(
-                        () -> new Exception("Shift report not found with given id")
-                );
+                .map(ShiftReportMapper::toDTO)
+                .orElseThrow(() -> new ResourceNotFoundException("Shift report not found with given id"));
     }
 
     @Override
@@ -153,43 +170,45 @@ public class ShiftReportServiceImpl implements ShiftReportService {
         LocalDateTime now = LocalDateTime.now();
 
         // DEBUG: Print the search criteria
-//        System.out.println("DEBUG: Searching for refunds...");
-//        System.out.println("DEBUG: Cashier ID: " + cashier.getId());
-//        System.out.println("DEBUG: Cashier Name: " + cashier.getFullName());
-//        System.out.println("DEBUG: Shift Start: " + shiftReport.getShiftStart());
-//        System.out.println("DEBUG: Current Time: " + now);
+        // System.out.println("DEBUG: Searching for refunds...");
+        // System.out.println("DEBUG: Cashier ID: " + cashier.getId());
+        // System.out.println("DEBUG: Cashier Name: " + cashier.getFullName());
+        // System.out.println("DEBUG: Shift Start: " + shiftReport.getShiftStart());
+        // System.out.println("DEBUG: Current Time: " + now);
 
         List<Order> orders = orderRepository.findByCashierAndCreatedAtBetween(
-                cashier, shiftReport.getShiftStart(), now
-        );
+                cashier, shiftReport.getShiftStart(), now);
 
         // DEBUG: Show order information to help create test refunds
-//        System.out.println("DEBUG: Found " + orders.size() + " orders");
-//        if (!orders.isEmpty()) {
-//            System.out.println("DEBUG: Sample order IDs for testing refunds:");
-//            orders.stream().limit(3).forEach(order ->
-//                    System.out.println("  Order ID: " + order.getId() + ", Amount: " + order.getTotalAmount())
-//            );
-//        }
+        // System.out.println("DEBUG: Found " + orders.size() + " orders");
+        // if (!orders.isEmpty()) {
+        // System.out.println("DEBUG: Sample order IDs for testing refunds:");
+        // orders.stream().limit(3).forEach(order ->
+        // System.out.println(" Order ID: " + order.getId() + ", Amount: " +
+        // order.getTotalAmount())
+        // );
+        // }
 
         List<Refund> refunds = refundRepository.findByCashierAndCreatedAtBetween(
-                cashier, shiftReport.getShiftStart(), now
-        );
+                cashier, shiftReport.getShiftStart(), now);
 
         // DEBUG: Print refund results
-//        System.out.println("DEBUG: Found " + refunds.size() + " refunds");
-//        if (!refunds.isEmpty()) {
-//            for (Refund refund : refunds) {
-//                System.out.println("DEBUG: Refund ID: " + refund.getId() +
-//                        ", Amount: " + refund.getAmount() +
-//                        ", Created: " + refund.getCreatedAt() +
-//                        ", Cashier: " + (refund.getCashier() != null ? refund.getCashier().getId() : "NULL"));
-//            }
-//        }
+        // System.out.println("DEBUG: Found " + refunds.size() + " refunds");
+        // if (!refunds.isEmpty()) {
+        // for (Refund refund : refunds) {
+        // System.out.println("DEBUG: Refund ID: " + refund.getId() +
+        // ", Amount: " + refund.getAmount() +
+        // ", Created: " + refund.getCreatedAt() +
+        // ", Cashier: " + (refund.getCashier() != null ? refund.getCashier().getId() :
+        // "NULL"));
+        // }
+        // }
 
         // Also check all refunds for this cashier without time restriction
-        List<Refund> allRefunds = refundRepository.findByCashier(cashier);
-//        System.out.println("DEBUG: Total refunds ever for this cashier: " + allRefunds.size());
+        // Removed unused variable: List<Refund> allRefunds =
+        // refundRepository.findByCashier(cashier);
+        // System.out.println("DEBUG: Total refunds ever for this cashier: " +
+        // allRefunds.size());
 
         double totalRefunds = refunds.stream()
                 .mapToDouble(refund -> refund.getAmount() != null ? refund.getAmount() : 0.0)
@@ -201,9 +220,9 @@ public class ShiftReportServiceImpl implements ShiftReportService {
         int totalOrders = orders.size();
         double netSale = totalSales - totalRefunds;
 
-//        System.out.println("DEBUG: Total Sales: " + totalSales);
-//        System.out.println("DEBUG: Total Refunds: " + totalRefunds);
-//        System.out.println("DEBUG: Net Sale: " + netSale);
+        // System.out.println("DEBUG: Total Sales: " + totalSales);
+        // System.out.println("DEBUG: Total Refunds: " + totalRefunds);
+        // System.out.println("DEBUG: Net Sale: " + netSale);
 
         shiftReport.setNetSale(netSale);
         shiftReport.setTotalSales(totalSales);
@@ -222,17 +241,14 @@ public class ShiftReportServiceImpl implements ShiftReportService {
     public ShiftReportDTO getShiftByCashierAndDate(UUID cashierId, LocalDateTime date) throws Exception {
 
         User cashier = userRepository.findById(cashierId).orElseThrow(
-                () -> new Exception("Cashier not found with given id")
-        );
+                () -> new Exception("Cashier not found with given id"));
 
         LocalDateTime start = date.withHour(0).withMinute(0).withSecond(0).withNano(0);
         LocalDateTime end = date.withHour(23).withMinute(59).withSecond(59).withNano(999999999);
 
         ShiftReport report = shiftReportRepository.findByCashierAndShiftStartBetween(
-                cashier, start, end
-        ).orElseThrow(
-                () -> new Exception("Shift report not found on this date for "+ cashier.getFullName())
-        );
+                cashier, start, end).orElseThrow(
+                        () -> new Exception("Shift report not found on this date for " + cashier.getFullName()));
 
         return ShiftReportMapper.toDTO(report);
     }
@@ -245,8 +261,8 @@ public class ShiftReportServiceImpl implements ShiftReportService {
         }
 
         Map<PaymentType, List<Order>> grouped = orders.stream()
-                .collect(Collectors.groupingBy(order -> order.getPaymentType() != null?
-                        order.getPaymentType() : PaymentType.CASH));
+                .collect(Collectors.groupingBy(
+                        order -> order.getPaymentType() != null ? order.getPaymentType() : PaymentType.CASH));
 
         List<PaymentSummaries> paymentSummaries = new ArrayList<>();
         for (Map.Entry<PaymentType, List<Order>> entry : grouped.entrySet()) {
