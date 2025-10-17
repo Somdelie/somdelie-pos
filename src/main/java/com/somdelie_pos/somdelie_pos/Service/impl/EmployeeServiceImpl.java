@@ -37,7 +37,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         Store store = storeRepository.findById(storeId).orElseThrow(
-                () -> new Exception("Store not found!"));
+                () -> new com.somdelie_pos.somdelie_pos.exception.ResourceNotFoundException("Store not found"));
 
         Branch branch = null;
 
@@ -47,12 +47,12 @@ public class EmployeeServiceImpl implements EmployeeService {
                 throw new Exception("Branch id is required for ROLE_BRANCH_CASHIER!");
             }
             branch = branchRepository.findById(employee.getBranchId()).orElseThrow(
-                    () -> new Exception("Branch not found!"));
+                    () -> new com.somdelie_pos.somdelie_pos.exception.ResourceNotFoundException("Branch not found"));
         }
         // Optional branchId for ROLE_BRANCH_MANAGER
         else if (employee.getRole() == UserRole.ROLE_BRANCH_MANAGER && employee.getBranchId() != null) {
             branch = branchRepository.findById(employee.getBranchId()).orElseThrow(
-                    () -> new Exception("Branch not found!"));
+                    () -> new com.somdelie_pos.somdelie_pos.exception.ResourceNotFoundException("Branch not found"));
         }
 
         User user = UserMapper.toEntity(employee);
@@ -71,11 +71,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
             return UserMapper.toDto(savedEmployee);
         } catch (DataIntegrityViolationException e) {
-            if (e.getMessage().contains("duplicate key value violates unique constraint") &&
-                    e.getMessage().contains("email")) {
-                throw new Exception("User with email '" + employee.getEmail() + "' already exists!");
-            }
-            throw new Exception("Failed to create employee: " + e.getMessage());
+            // Let GlobalExceptionHandler format this nicely
+            throw e;
         }
 
     }
@@ -101,11 +98,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             try {
                 return UserMapper.toDto(userRepository.save(user));
             } catch (DataIntegrityViolationException e) {
-                if (e.getMessage().contains("duplicate key value violates unique constraint") &&
-                        e.getMessage().contains("email")) {
-                    throw new Exception("User with email '" + employee.getEmail() + "' already exists!");
-                }
-                throw new Exception("Failed to create employee: " + e.getMessage());
+                throw e;
             }
         }
 
@@ -116,7 +109,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public User updateEmployee(UUID employeeId, UserDto employeeDetails, UUID branchId) throws Exception {
 
         User existingEmployee = userRepository.findById(employeeId).orElseThrow(
-                () -> new Exception("Employee not found!"));
+                () -> new com.somdelie_pos.somdelie_pos.exception.ResourceNotFoundException("Employee not found"));
 
         // Check if email already exists for a different user
         User userWithEmail = userRepository.findByEmail(employeeDetails.getEmail());
@@ -125,8 +118,17 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         Branch branch = branchRepository.findById(branchId).orElseThrow(
-                () -> new Exception("Branch not found!"));
+                () -> new com.somdelie_pos.somdelie_pos.exception.ResourceNotFoundException("Branch not found"));
 
+        if (employeeDetails.getEmail() == null || employeeDetails.getEmail().isBlank()) {
+            throw new Exception("Email is required");
+        }
+        if (employeeDetails.getFullName() == null || employeeDetails.getFullName().isBlank()) {
+            throw new Exception("Full name is required");
+        }
+        if (employeeDetails.getRole() == null) {
+            throw new Exception("Role is required");
+        }
         existingEmployee.setEmail(employeeDetails.getEmail());
         existingEmployee.setFullName(employeeDetails.getFullName());
         existingEmployee.setRole(employeeDetails.getRole());
@@ -140,11 +142,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         try {
             return userRepository.save(existingEmployee);
         } catch (DataIntegrityViolationException e) {
-            if (e.getMessage().contains("duplicate key value violates unique constraint") &&
-                    e.getMessage().contains("email")) {
-                throw new Exception("User with email '" + employeeDetails.getEmail() + "' already exists!");
-            }
-            throw new Exception("Failed to update employee: " + e.getMessage());
+            throw e;
         }
     }
 
@@ -152,7 +150,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public User updateStoreEmployee(UUID employeeId, UserDto employeeDetails, UUID storeId) throws Exception {
 
         User existingEmployee = userRepository.findById(employeeId).orElseThrow(
-                () -> new Exception("Employee not found!"));
+                () -> new com.somdelie_pos.somdelie_pos.exception.ResourceNotFoundException("Employee not found"));
 
         // Check if email already exists for a different user
         User userWithEmail = userRepository.findByEmail(employeeDetails.getEmail());
@@ -161,8 +159,17 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         Store store = storeRepository.findById(storeId).orElseThrow(
-                () -> new Exception("Store not found!"));
+                () -> new com.somdelie_pos.somdelie_pos.exception.ResourceNotFoundException("Store not found"));
 
+        if (employeeDetails.getEmail() == null || employeeDetails.getEmail().isBlank()) {
+            throw new Exception("Email is required");
+        }
+        if (employeeDetails.getFullName() == null || employeeDetails.getFullName().isBlank()) {
+            throw new Exception("Full name is required");
+        }
+        if (employeeDetails.getRole() == null) {
+            throw new Exception("Role is required");
+        }
         existingEmployee.setEmail(employeeDetails.getEmail());
         existingEmployee.setFullName(employeeDetails.getFullName());
         existingEmployee.setRole(employeeDetails.getRole());
@@ -176,11 +183,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         try {
             return userRepository.save(existingEmployee);
         } catch (DataIntegrityViolationException e) {
-            if (e.getMessage().contains("duplicate key value violates unique constraint") &&
-                    e.getMessage().contains("email")) {
-                throw new Exception("User with email '" + employeeDetails.getEmail() + "' already exists!");
-            }
-            throw new Exception("Failed to update employee: " + e.getMessage());
+            throw e;
         }
     }
 
@@ -188,7 +191,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void deleteEmployee(UUID employeeId) throws Exception {
 
         User existingEmployee = userRepository.findById(employeeId).orElseThrow(
-                () -> new Exception("Employee not found!"));
+                () -> new com.somdelie_pos.somdelie_pos.exception.ResourceNotFoundException("Employee not found"));
 
         userRepository.delete(existingEmployee);
 
@@ -198,7 +201,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<UserDto> findStoreEmployees(UUID storeId, UserRole role) throws Exception {
 
         Store store = storeRepository.findById(storeId).orElseThrow(
-                () -> new Exception("Store not found!"));
+                () -> new com.somdelie_pos.somdelie_pos.exception.ResourceNotFoundException("Store not found"));
 
         return userRepository.findByStore(store)
                 .stream().filter(user -> role == null || user.getRole() == role)
@@ -209,8 +212,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<UserDto> findBranchEmployees(UUID branchId, UserRole role) throws Exception {
-        Branch branch = branchRepository.findById(branchId).orElseThrow(
-                () -> new Exception("Branch not found!"));
+        branchRepository.findById(branchId).orElseThrow(
+                () -> new com.somdelie_pos.somdelie_pos.exception.ResourceNotFoundException("Branch not found"));
 
         return userRepository.findByBranchId(branchId)
                 .stream().filter(

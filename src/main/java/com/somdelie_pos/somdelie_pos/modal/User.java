@@ -1,17 +1,16 @@
 package com.somdelie_pos.somdelie_pos.modal;
 
-
 import com.somdelie_pos.somdelie_pos.domain.UserRole;
 import jakarta.persistence.Column;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
-import org.hibernate.annotations.GenericGenerator;import jakarta.persistence.Id;
+import jakarta.persistence.Id;
 
-import org.hibernate.annotations.GenericGenerator;import jakarta.persistence.ManyToOne;
+import jakarta.persistence.ManyToOne;
 
-import org.hibernate.annotations.GenericGenerator;import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Email;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
@@ -26,7 +25,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id") // Only use id for equals/hashCode
 public class User {
-
 
     @Id
     @UuidGenerator
@@ -60,6 +58,3 @@ public class User {
     private LocalDateTime deletedAt;
     private LocalDateTime lastLogin;
 }
-
-
-
