@@ -12,19 +12,16 @@ import com.somdelie_pos.somdelie_pos.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -32,14 +29,14 @@ public class AuthServiceImpl implements AuthService {
     private final CustomUserImplementation customUserImplementation;
 
     @Override
-    public AuthResponse  signup(UserDto userDto) throws UserException {
-        User user =userRepository.findByEmail(userDto.getEmail());
-        if(user !=null){
-            throw  new UserException("User with email already exists");
+    public AuthResponse signup(UserDto userDto) throws UserException {
+        User user = userRepository.findByEmail(userDto.getEmail());
+        if (user != null) {
+            throw new UserException("User with email already exists");
         }
 
         if (userDto.getRole().equals(UserRole.ROLE_SUPER_ADMIN)) {
-            throw  new UserException("Role admin is not allowed!");
+            throw new UserException("Role admin is not allowed!");
         }
 
         User newUser = new User();
@@ -53,11 +50,10 @@ public class AuthServiceImpl implements AuthService {
 
         newUser.setUpdatedAt(LocalDateTime.now());
 
-       User savedUser = userRepository.save(newUser);
+        User savedUser = userRepository.save(newUser);
 
-        Authentication authentication =
-                new UsernamePasswordAuthenticationToken(userDto.getEmail(),
-                        userDto.getPassword());
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDto.getEmail(),
+                userDto.getPassword());
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -79,10 +75,6 @@ public class AuthServiceImpl implements AuthService {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-
-        String role = authorities.iterator().next().getAuthority();
-
         String jwt = jwtProvider.generateToken(authentication);
 
         User user = userRepository.findByEmail(email);
@@ -103,11 +95,11 @@ public class AuthServiceImpl implements AuthService {
         UserDetails userDetails = customUserImplementation.loadUserByUsername(email);
 
         if (userDetails == null) {
-            throw  new UserException("User with"+ email +"does not exists");
+            throw new UserException("User with" + email + "does not exists");
         }
 
         if (!passwordEncoder.matches(password, userDetails.getPassword())) {
-            throw  new UserException("Email or password is incorrect!");
+            throw new UserException("Email or password is incorrect!");
         }
 
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

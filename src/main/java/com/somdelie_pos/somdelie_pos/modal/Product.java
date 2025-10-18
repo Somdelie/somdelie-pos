@@ -2,7 +2,7 @@ package com.somdelie_pos.somdelie_pos.modal;
 
 import jakarta.persistence.*;
 
-import org.hibernate.annotations.GenericGenerator;import lombok.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -46,13 +46,12 @@ public class Product {
     private LocalDateTime updatedDate;
 
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         createdDate = LocalDateTime.now();
     }
 
     @PreUpdate
-    protected void onUpdate(){
+    protected void onUpdate() {
         updatedDate = LocalDateTime.now();
     }
 }
-

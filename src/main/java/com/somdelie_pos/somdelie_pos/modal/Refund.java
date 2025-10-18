@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.somdelie_pos.somdelie_pos.domain.PaymentType;
 import jakarta.persistence.*;
 
-import org.hibernate.annotations.GenericGenerator;import lombok.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -44,9 +44,8 @@ public class Refund {
     private LocalDateTime createdAt;
 
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
 
 }
-

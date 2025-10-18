@@ -9,7 +9,7 @@ import java.util.UUID;
 @Data
 @Builder
 public class ProductDTO {
-    private UUID id;              // Changed from Long to UUID
+    private UUID id; // Changed from Long to UUID
     private String name;
     private String sku;
     private String description;
@@ -17,8 +17,9 @@ public class ProductDTO {
     private Double sellingPrice;
     private String brand;
     private String image;
-    private UUID categoryId;      // Changed from Long to UUID
-    private UUID storeId;         // Changed from Long to UUID
+    private UUID categoryId; // Changed from Long to UUID
+    private UUID storeId; // Changed from Long to UUID
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Integer quantitySold; // NEW: for analytics
 }

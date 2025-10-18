@@ -2,7 +2,7 @@ package com.somdelie_pos.somdelie_pos.modal;
 
 import jakarta.persistence.*;
 
-import org.hibernate.annotations.GenericGenerator;import lombok.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -36,4 +36,3 @@ public class Inventory {
         lastUpdate = LocalDateTime.now();
     }
 }
-

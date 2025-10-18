@@ -2,13 +2,13 @@ package com.somdelie_pos.somdelie_pos.modal;
 
 import jakarta.persistence.Column;
 
-import org.hibernate.annotations.GenericGenerator;import jakarta.persistence.Entity;
+import jakarta.persistence.Entity;
 
-import org.hibernate.annotations.GenericGenerator;import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GeneratedValue;
 
-import org.hibernate.annotations.GenericGenerator;import jakarta.persistence.Id;
+import jakarta.persistence.Id;
 
-import org.hibernate.annotations.GenericGenerator;import lombok.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -38,4 +38,3 @@ public class Customer {
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
 }
-

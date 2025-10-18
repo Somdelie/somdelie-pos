@@ -1,7 +1,6 @@
 package com.somdelie_pos.somdelie_pos.controller;
 
 import com.somdelie_pos.somdelie_pos.Service.CategoryService;
-import com.somdelie_pos.somdelie_pos.Service.UserService;
 import com.somdelie_pos.somdelie_pos.payload.dto.CategoryDTO;
 import com.somdelie_pos.somdelie_pos.payload.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,30 +15,25 @@ import java.util.UUID;
 @RequestMapping("/api/categories")
 public class CategoryController {
     private final CategoryService categoryService;
-    private final UserService userService;
 
     @PostMapping
     public ResponseEntity<CategoryDTO> createCategory(
             @RequestBody CategoryDTO categoryDTO) throws Exception {
 
         return ResponseEntity.ok(
-                categoryService.createCategory(categoryDTO)
-        );
+                categoryService.createCategory(categoryDTO));
     }
 
     @GetMapping("/store/{storeId}")
     public ResponseEntity<List<CategoryDTO>> getByStoreId(
-            @PathVariable UUID storeId
-    ){
+            @PathVariable UUID storeId) {
         return ResponseEntity.ok(
-                categoryService.getAllCategoriesByStore(storeId)
-        );
+                categoryService.getAllCategoriesByStore(storeId));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CategoryDTO> getCategoryById(
-            @PathVariable UUID id
-    ){
+            @PathVariable UUID id) {
         CategoryDTO category = categoryService.getCategoryById(id);
         if (category != null) {
             return ResponseEntity.ok(category);
@@ -54,13 +48,12 @@ public class CategoryController {
             @RequestBody CategoryDTO categoryDTO) throws Exception {
 
         return ResponseEntity.ok(
-                categoryService.updateCategory(id, categoryDTO)
-        );
+                categoryService.updateCategory(id, categoryDTO));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse> deleteCategory(
-            @PathVariable UUID id) throws Exception{
+            @PathVariable UUID id) throws Exception {
 
         categoryService.deleteCategory(id);
 

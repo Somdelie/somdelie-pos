@@ -3,7 +3,7 @@ package com.somdelie_pos.somdelie_pos.modal;
 import com.somdelie_pos.somdelie_pos.domain.StoreStatus;
 import jakarta.persistence.*;
 
-import org.hibernate.annotations.GenericGenerator;import lombok.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -41,14 +41,13 @@ public class Store {
     private StoreContact contact = new StoreContact();
 
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         createdDate = LocalDateTime.now();
         status = StoreStatus.PENDING;
     }
 
     @PreUpdate
-    protected void onUpdate(){
+    protected void onUpdate() {
         updatedDate = LocalDateTime.now();
     }
 }
-

@@ -6,6 +6,7 @@ import com.somdelie_pos.somdelie_pos.domain.PaymentType;
 import com.somdelie_pos.somdelie_pos.exception.ResourceNotFoundException;
 import com.somdelie_pos.somdelie_pos.mapper.ShiftReportMapper;
 import com.somdelie_pos.somdelie_pos.modal.*;
+import com.somdelie_pos.somdelie_pos.payload.dto.ProductWithQuantity;
 import com.somdelie_pos.somdelie_pos.payload.dto.ShiftReportDTO;
 import com.somdelie_pos.somdelie_pos.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -282,7 +283,7 @@ public class ShiftReportServiceImpl implements ShiftReportService {
         return paymentSummaries;
     }
 
-    private List<Product> getTopSellingProducts(List<Order> orders) {
+    private List<ProductWithQuantity> getTopSellingProducts(List<Order> orders) {
         if (orders.isEmpty()) {
             return new ArrayList<>();
         }
@@ -304,7 +305,12 @@ public class ShiftReportServiceImpl implements ShiftReportService {
         return productSalesMap.entrySet().stream()
                 .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
                 .limit(5)
-                .map(Map.Entry::getKey)
+                .map(entry -> {
+                    ProductWithQuantity pwq = new ProductWithQuantity();
+                    pwq.setProduct(entry.getKey());
+                    pwq.setQuantitySold(entry.getValue());
+                    return pwq;
+                })
                 .collect(Collectors.toList());
     }
 

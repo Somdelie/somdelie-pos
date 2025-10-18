@@ -1,8 +1,9 @@
 package com.somdelie_pos.somdelie_pos.modal;
 
 import jakarta.persistence.*;
+import com.somdelie_pos.somdelie_pos.payload.dto.ProductWithQuantity;
 
-import org.hibernate.annotations.GenericGenerator;import lombok.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,16 +38,12 @@ public class ShiftReport {
     @Transient
     private List<PaymentSummaries> paymentSummaries;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<Product> topSellProducts;
+    @Transient
+    private List<ProductWithQuantity> topSellProducts;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @Transient
     private List<Order> recentOrders;
 
-    @OneToMany(mappedBy = "shiftReport",  cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "shiftReport", cascade = CascadeType.ALL)
     private List<Refund> refunds;
-
-
-
 }
-
